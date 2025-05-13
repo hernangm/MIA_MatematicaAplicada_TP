@@ -6,7 +6,7 @@ from jax import nn
 import matplotlib.pyplot as plt
 
 from nn_functions import init_network_params, pack_params, layer_sizes
-from nn_functions import update_rmsprop, update_sgd
+from nn_functions import update_rmsprop, update_sgd, update_adam
 from nn_functions import get_batches, loss, batched_predict
 
 # Load data
@@ -29,6 +29,7 @@ params = pack_params(params)
 # optimizer
 update = update_rmsprop
 # update = update_sgd
+#update = update_adam
 step_size = 0.001
 
 # initialize gradients
@@ -41,8 +42,14 @@ log_train = []
 for epoch in range(num_epochs):
     # Update on each batch
     idxs = random.permutation(random.key(0), xx.shape[0])
+    r = 0
+    s = 0
+    t = 1
     for xi, yi in get_batches(xx[idxs], ff[idxs], bs=32):
         params, aux = update(params, xi, yi, step_size, aux)
+        #adam algorithm
+        #params, r, s = update(params, xi, yi,r,s,t)
+        t += 1
 
     train_loss = loss(params, xx, ff)
     log_train.append(train_loss)

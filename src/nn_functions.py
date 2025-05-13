@@ -72,6 +72,24 @@ def update_rmsprop(params, x, y, step_size, aux):
     params = params - step_size * grads
     return params, aux
 
+@jit
+def update_adam(params, x, y, r, s, t):
+    alpha = 0.01
+    beta1 = 0.9
+    beta2 = 0.999
+    delta = 1e-8 #10**-8
+
+    gradient = grad(loss)(params, x, y)
+
+    s = s * beta1 + (1 - beta1) * gradient
+    r = r * beta2 + (1 - beta2) * jnp.square(gradient)
+
+    s_hat = s / (1 - (beta1 ** t))
+    r_hat = r / (1 - (beta2 ** t))
+
+    params = params - alpha/(jnp.sqrt(r_hat) + delta) * s_hat
+    return params, r, s
+
 def get_batches(x, y, bs):
     for i in range(0, len(x), bs):
         yield x[i:i+bs], y[i:i+bs]
