@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from nn_functions import init_network_params, pack_params, layer_sizes
 from nn_functions import update_rmsprop, update_sgd, update_adam
-from nn_functions import get_batches, loss, batched_predict
+from nn_functions import get_batches, loss, batched_predict, pow_schedule
 
 # Load data
 field = jnp.load('field.npy')
@@ -27,9 +27,9 @@ params = init_network_params(layer_sizes, random.key(0))
 params = pack_params(params)
 
 # optimizer
-update = update_rmsprop
+#update = update_rmsprop
 # update = update_sgd
-#update = update_adam
+update = update_adam
 step_size = 0.001
 
 # initialize gradients
@@ -44,12 +44,14 @@ for epoch in range(num_epochs):
     idxs = random.permutation(random.key(0), xx.shape[0])
     r = 0
     s = 0
-    t = 1
+    iteration = 1
+    alpha = 0.02
     for xi, yi in get_batches(xx[idxs], ff[idxs], bs=32):
-        params, aux = update(params, xi, yi, step_size, aux)
-        #adam algorithm
-        #params, r, s = update(params, xi, yi,r,s,t)
-        t += 1
+        #params, aux = update(params, xi, yi, step_size, aux)
+        '''Adam algorithm'''
+        params, r, s = update(params, xi, yi, r, s, iteration, alpha)
+        iteration += 1
+        alpha = pow_schedule(alpha, iteration)
 
     train_loss = loss(params, xx, ff)
     log_train.append(train_loss)
@@ -58,7 +60,6 @@ for epoch in range(num_epochs):
 # Plot loss function
 plt.figure()
 plt.semilogy(log_train)
-
 # Plot results
 plt.figure()
 plt.imshow(ff.reshape((nx, ny)).T, origin='lower', cmap='jet')
