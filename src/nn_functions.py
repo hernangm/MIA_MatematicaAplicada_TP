@@ -64,6 +64,17 @@ def update_sgd(params, x, y, step, aux):
     return params, aux
 
 @jit
+def update_sgd_momentum(params, x, y, step_size, momentum):
+    beta = 0.9  
+    grads = grad(loss)(params, x, y)
+    momentum = beta * momentum + step_size * grads
+    params = params - momentum
+    return params, momentum
+
+
+
+
+@jit
 def update_rmsprop(params, x, y, step_size, aux):
     beta = 0.9
     grads = grad(loss)(params, x, y)
