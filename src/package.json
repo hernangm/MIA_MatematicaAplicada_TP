@@ -1,13 +1,13 @@
 {
   "dependencies": {
+    "colormap": "^2.3.2",
     "react-heatmap-grid": "^0.9.1"
   },
   "resolutions": {
-  "react": "^18.2.0",
-  "react-dom": "^18.2.0"
-},
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
   "scripts": {
-  "preinstall": "npx npm-force-resolutions"
-}
-
+    "preinstall": "npx npm-force-resolutions"
+  }
 }

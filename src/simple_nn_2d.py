@@ -31,13 +31,14 @@ def entrenar():
     ff = field.reshape(-1, 1)
 
     # Parameters
-    num_epochs = 10
     params = init_network_params(layer_sizes, random.key(0))
     params = pack_params(params)
+    num_epochs = 10
 
     # optimizer
-    #update = update_rmsprop
-    update = update_sgd
+    update = update_rmsprop
+    #update = update_sgd
+    #update = update_sgd_momentum
     #update = update_adam
     step_size = 0.001
 
@@ -62,7 +63,7 @@ def entrenar():
             '''Adam algorithm'''
             #params, r, s = update(params, xi, yi, r, s, iteration, alpha)
             iteration += 1
-            alpha = pow_schedule(alpha, iteration)
+            alpha = pow_schedule(alpha, epoch)
 
         train_loss = loss(params, xx, ff)
 
@@ -72,15 +73,15 @@ def entrenar():
         enviar_prediccion(pred, epoch)
         print(f"Epoch {epoch}, Loss: {train_loss}")
 
-    # Plot loss function
-    plt.figure()
-    plt.semilogy(log_train)
-    # Plot results
-    plt.figure()
-    plt.imshow(ff.reshape((nx, ny)).T, origin='lower', cmap='jet')
-
-    plt.figure()
-    plt.imshow(batched_predict(params, xx).reshape((nx, ny)).T, origin='lower', cmap='jet')
-
-    # Show figures
-    plt.show()
+    ##Plot loss function
+    #plt.figure()
+    #plt.semilogy(log_train)
+    ## Plot results
+    #plt.figure()
+    #plt.imshow(ff.reshape((nx, ny)).T, origin='lower', cmap='jet')
+#
+    #plt.figure()
+    #plt.imshow(batched_predict(params, xx).reshape((nx, ny)).T, origin='lower', cmap='jet')
+#
+    ## Show figures
+    #plt.show()

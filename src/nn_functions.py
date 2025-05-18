@@ -11,6 +11,7 @@ def pack_params(params):
                              [jnp.ravel(b) for _, b in params])
 
 layer_sizes = [2, 64, 64, 1]
+#layer_sizes = [4, 128, 128, 2]
 def unpack_params(params):
     """Unpack parameters from a single vector."""
     weights = []
@@ -65,7 +66,7 @@ def update_sgd(params, x, y, step, aux):
 
 @jit
 def update_sgd_momentum(params, x, y, step_size, momentum):
-    beta = 0.9  
+    beta = 0.01
     grads = grad(loss)(params, x, y)
     momentum = beta * momentum + step_size * grads
     params = params - momentum
