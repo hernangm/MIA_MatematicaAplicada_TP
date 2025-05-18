@@ -74,7 +74,6 @@ def update_rmsprop(params, x, y, step_size, aux):
 
 @jit
 def update_adam(params, x, y, r, s, t, alpha):
-    #alpha = 0.1
     beta1 = 0.9
     beta2 = 0.999
     delta = 1e-8 #10**-8
@@ -92,6 +91,9 @@ def update_adam(params, x, y, r, s, t, alpha):
 
 def pow_schedule(alpha, it, r = 0.01):
     return alpha * jnp.pow(1 + it / r,jnp.exp(1) * -1 )
+
+def exp_schedule(alpha, it, r = 0.01):
+    return alpha * jnp.pow(10, - (it / r))
 
 def get_batches(x, y, bs):
     for i in range(0, len(x), bs):
