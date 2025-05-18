@@ -4,8 +4,9 @@ import socketio
 import uvicorn
 import threading
 import subprocess
+from simple_nn_2d import entrenar_modelo, update_rmsprop
 
-from simple_nn_2d import entrenar
+
 
 # Instancia FastAPI por separado
 fastapi_app = FastAPI()
@@ -41,28 +42,28 @@ async def recibir_pred(data: dict):
     await sio.emit("new_pred", {"pred": pred, "epoch": epoch})
     return {"status": "ok"}
 
+@fastapi_app.post("/entrenar")
+def iniciar_entrenamiento():
+    thread = threading.Thread(target=entrenar_modelo, args=(update_rmsprop,))
+    thread.start()
+    return {"status": "entrenamiento_iniciado"}
 
 #    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
     # Lanza el servidor ASGI (Socket.IO + FastAPI)
 def run_server():
         uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
 
-    # Lanza el script de entrenamiento
-def run_entrenamiento():
-        entrenar()
 
     # Si se ejecuta directamente como script
 if __name__ == "__main__":
     # Hilo 1: servidor
     server_thread = threading.Thread(target=run_server)
 
-    # Hilo 2: entrenamiento
-    entrenamiento_thread = threading.Thread(target=run_entrenamiento)
+
 
     # Iniciar ambos hilos
     server_thread.start()
-    entrenamiento_thread.start()
+
 
     # Esperar a que terminen (si querés)
     server_thread.join()
-    entrenamiento_thread.join()

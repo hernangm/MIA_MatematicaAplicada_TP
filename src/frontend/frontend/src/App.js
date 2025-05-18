@@ -23,6 +23,7 @@ function App() {
   const [dataPoints, setDataPoints] = useState([]);
   const [labels, setLabels] = useState([]);
   const [pred, setPred] = useState([]);
+  const yTicksSet = new Set(dataPoints.map(d => Number(d.toFixed(5))));
 
   useEffect(() => {
     socket.on("new_loss", (data) => {
@@ -58,42 +59,54 @@ function App() {
     ]
   };
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        type: 'logarithmic',
-        beginAtZero: false,
-        ticks: {
-          callback: function (value) {
-            return Number(value).toExponential(1);
-          },
-          color: 'black'
-        },
-        title: {
-          display: true,
-          text: 'Loss (log)',
-          color: 'black'
+function isCloseToAny(value, array, epsilon = 1e-4) {
+  return array.some(v => Math.abs(v - value) < epsilon);
+}
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+y: {
+  type: 'linear',
+  beginAtZero: false,
+  suggestedMin: Math.min(...dataPoints || [0.001]) * 0.9,
+  suggestedMax: Math.max(...dataPoints || [0.1]) * 1.1,
+  ticks: {
+    color: 'black',
+    callback: function (value) {
+      return Number(value).toExponential(1); // ✅ solo formato, sin filtrar
+    }
+  },
+  title: {
+    display: true,
+    text: 'Loss',
+    color: 'black'
+  }
+}
+,
+    x: {
+      ticks: {
+        color: 'black',
+        callback: function (val, index, ticks) {
+          if (index >= ticks.length - 5) return val;
+          return index % 3 === 0 ? val : '';
         }
       },
-      x: {
-        ticks: {
-          color: 'black'
-        },
-        title: {
-          display: true,
-          text: 'Epoch',
-          color: 'black'
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        display: false
+      title: {
+        display: true,
+        text: 'Epoch',
+        color: 'black'
       }
     }
-  };
+  },
+  plugins: {
+    legend: {
+      display: false
+    }
+  }
+};
+
 
   return (
     <div style={{ width: '100vw', height: '100vh', padding: '10px', boxSizing: 'border-box', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '10px' }}>
@@ -139,7 +152,9 @@ function App() {
       {/* Cuadro inferior derecho - Espacio reservado para futuros controles */}
       <div style={{ gridColumn: '2', gridRow: '2', backgroundColor: '#f9f9f9', border: '1px solid #ccc', padding: '10px' }}>
         <h4>Controles</h4>
-        <p>Espacio reservado para botones o configuraciones futuras.</p>
+         <button onClick={() => {fetch("http://localhost:8000/entrenar", { method: "POST" });}}style={{ padding: "10px 20px", backgroundColor: "#0074D9", color: "white", border: "none", borderRadius: "4px" }}>
+    Iniciar entrenamiento
+      </button>
       </div>
     </div>
   );
