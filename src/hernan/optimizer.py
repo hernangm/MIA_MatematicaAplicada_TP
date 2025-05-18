@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from jax import random, grad
 import helpers.configHelpers as configHelpers
-from neuralNetwork import loss
+from neuralNetwork import batched_predict, loss
 
 def _getBatches(x, y, bs):
     for i in range(0, len(x), bs):
@@ -9,7 +9,7 @@ def _getBatches(x, y, bs):
 
 
 def optimize(params, data, config, algorithm, algorithmConfig, scheduler, schedulerConfig):
-    results = []
+    trainLog = []
     epochs, minibatch = configHelpers.extract(config, ["epochs", "minibatch"])
     learningRate = configHelpers.extract(algorithmConfig, ["learningRate"])
     xx, ff = data
@@ -22,13 +22,12 @@ def optimize(params, data, config, algorithm, algorithmConfig, scheduler, schedu
         for xi, yi in _getBatches(xx[idxs], ff[idxs], bs=minibatch):
             t += 1
             params, aux = algorithm(params, xi, yi, aux, t, learningRate, algorithmConfig)
-            #earningRate = scheduler(learningRate, i, schedulerConfig)
+
+        learningRate = scheduler(learningRate, t, schedulerConfig)
         trainLoss = loss(params, xx, ff)
-        results.append({
+        trainLog.append({
             "epoch": epoch,
             "trainLoss": trainLoss,
             "learningRate": learningRate
         })
-    return results
-
-
+    return (params, batched_predict(params, xx), trainLog)

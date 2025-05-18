@@ -1,5 +1,5 @@
-import helpers.json as json
-import dataLoader as dataLoader
+import helpers.jsonHelpers as jsonHelpers
+import helpers.dataHelpers as dataHelpers
 from algorithms import Algorithms
 from algorithms.optimizers.sgd import sgd
 from algorithms.optimizers.adam import adam
@@ -22,19 +22,26 @@ def getScheduler(algorithms, test):
 
 def runTests(algorithms, tests, networkParams, data):
     testResults = []
-    for test in tests:
+    enabledTests = [t for t in tests if t["enabled"]]
+    for test in enabledTests:
         network = createNetwork(networkParams["layers"])
         algorithm, algorithmConfig = getAlgorithm(algorithms, test)
         scheduler, schedulerConfig = getScheduler(algorithms, test)
-        results, meta = runTest(test, data, network, algorithm, algorithmConfig, scheduler, schedulerConfig)
-        testResults.append((test, results, meta))
+        params, prediction, trainLog, meta = runTest(test, data, network, algorithm, algorithmConfig, scheduler, schedulerConfig)
+        testResults.append({
+            "test": test,
+            "params": params,
+            "prediction": prediction,
+            "trainLog": trainLog,
+            "meta": meta
+        })
     return testResults
 
 
 if __name__ == '__main__':
-    tests = json.load('hernan\\config\\tests.json')
-    networkParams = json.load('hernan\\config\\network.json')
-    data = dataLoader.loadData('hernan\\data\\field.npy')
+    tests = jsonHelpers.load('hernan\\data\\tests.json')
+    networkParams = jsonHelpers.load('hernan\\data\\network.json')
+    data = dataHelpers.loadData('hernan\\data\\field.npy')
     algorithms = Algorithms({
         "sgd": sgd,
         "adam": adam,
@@ -42,5 +49,5 @@ if __name__ == '__main__':
     },{
         "trivial": schedule_trivial
     })
-    testResults = runTests(algorithms, tests, networkParams, data)
-    graph(testResults)
+    testResults = runTests(algorithms, tests, networkParams, data[0])
+    graph(data, testResults)

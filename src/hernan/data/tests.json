@@ -19,12 +19,12 @@
         },
         "graph": {
             "enabled": true,
-            "line": "orange"
+            "color": "orange"
         }
     },
     {
         "name": "ADAM",
-        "enabled": true,
+        "enabled": false,
         "config": {
             "epochs": 10,
             "minibatch": 32,
@@ -34,7 +34,9 @@
                     "learningRate": 0.01,
                     "beta1": 0.9,
                     "beta2": 0.999,
-                    "delta": 1e-8
+                    "delta": 1e-8,
+                    "r": 0,
+                    "s": 0
                 }
             },
             "scheduler": {
@@ -44,7 +46,7 @@
         },
         "graph": {
             "enabled": true,
-            "line": "blue"
+            "color": "blue"
         }
     }
 ]

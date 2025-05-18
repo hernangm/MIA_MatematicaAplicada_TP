@@ -8,7 +8,7 @@ def adam(params, x, y, aux, t, learningRate, config):
     return update_adam(params, x, y, aux, t, learningRate, beta1, beta2, delta, s, r)
 
 @jit
-def update_adam(params, x, y, t, learningRate, beta1, beta2, delta, s, r):
+def update_adam(params, x, y, aux, t, learningRate, beta1, beta2, delta, s, r):
     # alpha = 0.01
     # beta1 = 0.9
     # beta2 = 0.999
@@ -23,4 +23,4 @@ def update_adam(params, x, y, t, learningRate, beta1, beta2, delta, s, r):
     r_hat = r / (1 - (beta2 ** t))
 
     params = params - learningRate/(jnp.sqrt(r_hat) + delta) * s_hat
-    return params, r, s
+    return params, aux

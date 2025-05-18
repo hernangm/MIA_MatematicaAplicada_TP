@@ -9,7 +9,7 @@ def runTest(test, data, network, algorithm, algorithmConfig, scheduler, schedule
     testName = test["name"]
     startTime= time.time()
     print(f"{formatTime(startTime)} Test {testName} started...")
-    results = optimize(network, data, test["config"], algorithm, algorithmConfig, scheduler, schedulerConfig)
+    params, prediction, history = optimize(network, data, test["config"], algorithm, algorithmConfig, scheduler, schedulerConfig)
     endTime = time.time()
     duration = endTime - startTime
     print(f"{formatTime(endTime)} Test {testName} finished in {round(duration, 4)}.")
@@ -18,4 +18,4 @@ def runTest(test, data, network, algorithm, algorithmConfig, scheduler, schedule
         "endTime": endTime,
         "duration": duration
     }
-    return (results, meta)
+    return (params, prediction, history, meta)

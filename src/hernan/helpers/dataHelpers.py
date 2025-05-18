@@ -12,4 +12,4 @@ def loadData(filePath):
     xx, yy = jnp.meshgrid(xx, yy, indexing='ij')
     xx = jnp.concatenate([xx.reshape(-1, 1), yy.reshape(-1, 1)], axis=1)
     ff = field.reshape(-1, 1)
-    return (xx, ff)
+    return ((xx, ff), (nx, ny))

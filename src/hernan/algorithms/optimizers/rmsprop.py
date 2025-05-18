@@ -12,5 +12,5 @@ def update_rmsprop(params, x, y, aux, learningRate, beta):
     grads = grad(loss)(params, x, y)
     aux = beta * aux + (1 - beta) * jnp.square(grads)
     params = params - learningRate * grads
-    learningRate = learningRate / (jnp.sqrt(aux) + 1e-8)
+    # learningRate = learningRate / (jnp.sqrt(aux) + 1e-8)
     return params, aux
