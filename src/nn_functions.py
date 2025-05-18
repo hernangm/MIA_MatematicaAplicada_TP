@@ -1,7 +1,8 @@
 import jax.numpy as jnp
-from jax import grad, jit, vmap
+from jax import grad, jit, vmap, jacfwd, jacrev
 from jax import random
 from jax import nn
+import jax
 
 import matplotlib.pyplot as plt
 
@@ -59,7 +60,7 @@ def loss(params, coord, target):
 
 @jit
 def update_sgd(params, x, y, step, aux):
-    grads  = grad(loss)(params, x, y)
+    grads = grad(loss)(params, x, y)
     params = params - step * grads
     return params, aux
 
@@ -72,28 +73,41 @@ def update_rmsprop(params, x, y, step_size, aux):
     params = params - step_size * grads
     return params, aux
 
+
 @jit
-def update_adam(params, x, y, r, s, t, alpha):
-    beta1 = 0.9
-    beta2 = 0.999
-    delta = 1e-8 #10**-8
+def update_adam(params, x, y, r, s, iteration, alpha, beta1, beta2, delta):
+    #beta1 = 0.9
+    #beta2 = 0.999
+    #delta = 1e-8 #10**-8
 
     gradient = grad(loss)(params, x, y)
 
     s = s * beta1 + (1 - beta1) * gradient
     r = r * beta2 + (1 - beta2) * jnp.square(gradient)
 
-    s_hat = s / (1 - (beta1 ** t))
-    r_hat = r / (1 - (beta2 ** t))
+    s_hat = s / (1 - (beta1 ** iteration))
+    r_hat = r / (1 - (beta2 ** iteration))
 
     params = params - alpha/(jnp.sqrt(r_hat) + delta) * s_hat
     return params, r, s
 
-def pow_schedule(alpha, it, r = 0.01):
-    return alpha * jnp.pow(1 + it / r,jnp.exp(1) * -1 )
 
-def exp_schedule(alpha, it, r = 0.01):
+@jit
+def hessian_spectrum(params, coords, target):
+    # lambda_loss = lambda x: loss(x['params'], x['coords'], x['target'])
+    # h = jacrev(jacfwd(lambda_loss))({'params': params, 'coords': coords, 'target': target})
+    h = jacrev(jacfwd(loss))(params, coords, target)
+    eigvals, eigvecs = jax.scipy.linalg.eigh(h)
+    return eigvals
+
+    
+def pow_schedule(alpha, it, r):
+    return alpha * jnp.pow(1 + it / r,jnp.exp(1) * -1)
+
+
+def exp_schedule(alpha, it, r):
     return alpha * jnp.pow(10, - (it / r))
+
 
 def get_batches(x, y, bs):
     for i in range(0, len(x), bs):
