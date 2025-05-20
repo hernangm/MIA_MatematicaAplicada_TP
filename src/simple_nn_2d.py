@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from nn_functions import init_network_params, pack_params, layer_sizes
 from nn_functions import update_rmsprop, update_sgd, update_adam
-from nn_functions import get_batches, loss, batched_predict, pow_schedule, hessian_spectrum
+from nn_functions import get_batches, loss, batched_predict, pow_schedule, hessian_eigenvals
 
 # Load data
 field = jnp.load('field.npy')
@@ -34,11 +34,11 @@ update = update_adam
 step_size = 0.001
 
 # initialize gradients
-xi, yi = next(get_batches(xx, ff, bs=32))
+xi, yi = next(get_batches(xx, ff, bs=64))
 grads = grad(loss)(params, xi, yi)
 aux = jnp.square(grads)
 eigValsArray = jnp.zeros(num_epochs)
-alpha = 0.01
+alpha = 0.04
 alphas = []
 epochs = []
 alphas.append(alpha)
@@ -56,7 +56,7 @@ for epoch in range(num_epochs):
     delta = 1e-3 #10**-8
     schedule_r = 450
     
-    for xi, yi in get_batches(xx[idxs], ff[idxs], bs=32):
+    for xi, yi in get_batches(xx[idxs], ff[idxs], bs=64):
         #params, aux = update(params, xi, yi, step_size, aux)
         '''Adam algorithm'''
         params, r, s = update(params, xi, yi, r, s, iteration, alpha, beta1, beta2, delta)
@@ -81,7 +81,7 @@ plt.semilogy(log_train)
 
 plt.figure()
 plt.title('Alpha variation with power schedule 75 epochs')
-plt.plot(epochs, alphas, marker='o')
+plt.plot(epochs, alphas, drawstyle='steps-pre')
 
 # Plot results
 plt.figure()

@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from jax import grad, jit, vmap, jacfwd, jacrev
+from jax import grad, jit, vmap, hessian
 from jax import random
 from jax import nn
 import jax
@@ -93,11 +93,9 @@ def update_adam(params, x, y, r, s, iteration, alpha, beta1, beta2, delta):
 
 
 @jit
-def hessian_spectrum(params, coords, target):
-    # lambda_loss = lambda x: loss(x['params'], x['coords'], x['target'])
-    # h = jacrev(jacfwd(lambda_loss))({'params': params, 'coords': coords, 'target': target})
-    h = jacrev(jacfwd(loss))(params, coords, target)
-    eigvals, eigvecs = jax.scipy.linalg.eigh(h)
+def hessian_eigenvals(params, coords, target):
+    h = hessian(loss)(params, coords, target)
+    eigvals = jnp.linalg.eigvalsh(h)
     return eigvals
 
     
