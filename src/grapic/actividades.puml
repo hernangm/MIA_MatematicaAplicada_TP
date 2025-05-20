@@ -1,0 +1,28 @@
+
+@startuml
+start
+:Inicializar pesos y bias;
+:Empaquetar parámetros;
+
+while (quedan epochs?) is (sí)
+  while (quedan batches?) is (sí)
+    :Seleccionar batch (xi, yi);
+
+    if (Optimizador == Adam?) then (Sí)
+      :grad = grad(loss);
+      :Actualizar r, s;
+      :Corregir r_hat, s_hat;
+      :Actualizar params;
+    else
+      :grad = grad(loss);
+      :Actualizar momentum o rms;
+      :Actualizar params;
+    endif
+  endwhile
+
+  :Calcular predicción;
+  :Calcular pérdida;
+endwhile
+
+stop
+@enduml

@@ -65,8 +65,7 @@ def update_sgd(params, x, y, step, aux):
     return params, aux
 
 @jit
-def update_sgd_momentum(params, x, y, step_size, momentum):
-    beta = 0.01
+def update_sgd_momentum(params, x, y, step_size, momentum, beta):
     grads = grad(loss)(params, x, y)
     momentum = beta * momentum + step_size * grads
     params = params - momentum

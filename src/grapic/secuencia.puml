@@ -1,0 +1,56 @@
+@startuml
+actor Usuario
+participant "App.js (React)" as React
+participant "main.py (FastAPI)" as API
+participant "simple_nn_2d.py" as Entrenador
+participant "nn_functions.py" as Funciones
+participant "utils_api.py" as APIUtils
+participant "Socket.IO Server" as SocketIO
+
+== Inicio desde la UI ==
+Usuario -> React : Clic en "Iniciar entrenamiento"
+React -> API : POST /entrenar
+
+== Backend inicia entrenamiento ==
+API -> Entrenador : hilo(target=entrenar_modelo, args=...)
+Entrenador -> Funciones : init_network_params(layer_sizes, key)
+Funciones --> Entrenador : pesos y bias iniciales
+
+Entrenador -> Funciones : get_batches(xx, ff, batch_size)
+Funciones --> Entrenador : batch xi, yi
+Entrenador -> Funciones : grad(loss)(params, xi, yi)
+Funciones --> Entrenador : gradientes iniciales
+
+loop epochs
+    Entrenador -> Funciones : random.permutation(xx.shape[0])
+    Entrenador -> Funciones : get_batches(xx[idxs], ff[idxs])
+
+    loop batches
+        alt optimizador == Adam
+            Entrenador -> Funciones : update_adam(params, xi, yi, r, s, it, alpha)
+        else otros
+            Entrenador -> Funciones : update(params, xi, yi, step_size, aux)
+        end
+        Funciones --> Entrenador : nuevos params y vars auxiliares
+        Entrenador -> Funciones : pow_schedule(alpha, iteration)
+    end
+
+    Entrenador -> Funciones : loss(params, xx, ff)
+    Funciones --> Entrenador : loss actual
+    Entrenador -> APIUtils : enviar_loss(loss, epoch)
+    APIUtils -> API : POST /loss
+    API -> SocketIO : emit("new_loss", {loss, epoch})
+
+    Entrenador -> Funciones : batched_predict(params, xx)
+    Funciones --> Entrenador : predicciones
+    Entrenador -> APIUtils : enviar_prediccion(pred, epoch)
+    APIUtils -> API : POST /pred
+    API -> SocketIO : emit("new_pred", {pred, epoch})
+end
+
+SocketIO -> React : new_loss
+SocketIO -> React : new_pred
+
+React -> Usuario : Actualiza gráfico de Loss y mapa de calor
+
+@enduml

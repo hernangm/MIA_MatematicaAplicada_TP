@@ -5,13 +5,13 @@
 frontend/frontend/node_modules
 /.pnp
 .pnp.js
-
+/backend/__pycache__/*
 # testing
 /coverage
-
+backend/__pycache__
 # production
 /build
-
+backend/__pycache__/main.cpython-311.pyc
 # misc
 .DS_Store
 .env.local
