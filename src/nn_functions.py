@@ -92,7 +92,20 @@ def update_adam(params, x, y, r, s, iteration, alpha, beta1, beta2, delta):
     return params, r, s
 
 
-@jit
+def activations(params, coord):
+    params = unpack_params(params)
+    hidden = coord
+    hiddens = []
+    for w, b in params[:-1]:
+        outputs = jnp.dot(w, hidden) + b
+        hidden = nn.tanh(outputs)
+        hiddens.append(hidden)
+    return hiddens
+
+
+batched_activations = vmap(activations, in_axes=(None, 0))
+
+
 def hessian_eigenvals(params, coords, target):
     h = hessian(loss)(params, coords, target)
     eigvals = jnp.linalg.eigvalsh(h)

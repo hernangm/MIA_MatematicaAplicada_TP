@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from nn_functions import init_network_params, pack_params, layer_sizes
 from nn_functions import update_rmsprop, update_sgd, update_adam
-from nn_functions import get_batches, loss, batched_predict, pow_schedule, hessian_eigenvals
+from nn_functions import get_batches, loss, batched_predict, pow_schedule, hessian_eigenvals, batched_activations
 
 # Load data
 field = jnp.load('field.npy')
@@ -43,6 +43,7 @@ alphas = []
 epochs = []
 alphas.append(alpha)
 epochs.append(1)
+act_matrix = [jnp.array([]), jnp.array([])]
 # Training
 log_train = []
 for epoch in range(num_epochs):
@@ -64,6 +65,11 @@ for epoch in range(num_epochs):
         
     #eigValsArray[epoch] = hessian_spectrum(params, xx, ff)
     train_loss = loss(params, xx, ff)
+    acts = batched_activations(params, xx)
+    for i, activation in enumerate(acts):
+        flat = jnp.ravel(activation)
+        act_matrix[i] = jnp.concatenate([act_matrix[i], flat])
+    
     print(f"Epoch {epoch}, Loss: {train_loss}")
     if len(log_train) > 1 and train_loss > log_train[-1]:
         alpha = pow_schedule(alpha, epoch + 1, schedule_r)
@@ -78,6 +84,14 @@ plt.title('Loss ADAM. scheduler power 75 epochs')
 plt.xlabel('Epochs')
 plt.ylabel('Costo f(x)')
 plt.semilogy(log_train)
+
+plt.figure()
+for i, layer_values in enumerate(act_matrix):
+    flat = jnp.ravel(layer_values)
+    plt.hist(flat, bins=30, alpha=0.5, label=f'activation layer {i}')
+    plt.legend()
+plt.title('Activation Histogram')
+
 
 plt.figure()
 plt.title('Alpha variation with power schedule 75 epochs')
