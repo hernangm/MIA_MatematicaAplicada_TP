@@ -223,7 +223,7 @@ return (
 {/* Sliders de parámetros */}
 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
   <label>Epochs: {numEpochs}
-    <input type="range" min="1" max="100" step="1" value={numEpochs} onChange={e => setNumEpochs(e.target.value)} />
+    <input type="range" min="1" max="1000" step="1" value={numEpochs} onChange={e => setNumEpochs(e.target.value)} />
   </label>
 
   <label>Step Size: {stepSize}
@@ -238,7 +238,10 @@ return (
     <input type="range" min="1" max="128" step="1" value={batchSize} onChange={e => setBatchSize(e.target.value)} />
   </label>
   {opt === "momentum" && (
-  <label>Beta (Momentum): <input type="number" step="0.01" value={beta} onChange={e => setBeta(e.target.value)} /></label>
+  <label>Beta (Momentum): {beta}
+
+  <input type="range" min="0.0001" max="5" step="0.0001" value={beta} onChange={e => setBeta(e.target.value)} />
+  </label>
    )}
 
   {opt === "adam" && (
