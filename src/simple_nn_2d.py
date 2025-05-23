@@ -107,3 +107,4 @@ plt.imshow(batched_predict(params, xx).reshape((nx, ny)).T, origin='lower', cmap
 
 # Show figures
 plt.show()
+
