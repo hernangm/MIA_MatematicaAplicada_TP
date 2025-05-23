@@ -1,14 +1,13 @@
 import jax.numpy as jnp
-from jax import grad, jit, vmap
+from jax import grad
 from jax import random
-from jax import nn
 import numpy as np
 
 import matplotlib.pyplot as plt
 
 from nn_functions import init_network_params, pack_params, layer_sizes
 from nn_functions import update_rmsprop, update_sgd, update_adam
-from nn_functions import get_batches, loss, batched_predict, pow_schedule, hessian_eigenvals, batched_activations
+from nn_functions import get_batches, loss, batched_predict, pow_schedule, batched_activations, hessian_eigenvals
 
 # Load data
 field = jnp.load('field.npy')
@@ -23,7 +22,7 @@ xx = jnp.concatenate([xx.reshape(-1, 1), yy.reshape(-1, 1)], axis=1)
 ff = field.reshape(-1, 1)
 
 # Parameters
-num_epochs = 75
+num_epochs = 200
 params = init_network_params(layer_sizes, random.key(0))
 params = pack_params(params)
 
@@ -37,7 +36,7 @@ step_size = 0.001
 xi, yi = next(get_batches(xx, ff, bs=64))
 grads = grad(loss)(params, xi, yi)
 aux = jnp.square(grads)
-eigValsArray = jnp.zeros(num_epochs)
+eigValsArray = None
 alpha = 0.04
 alphas = []
 epochs = []
@@ -62,8 +61,9 @@ for epoch in range(num_epochs):
         '''Adam algorithm'''
         params, r, s = update(params, xi, yi, r, s, iteration, alpha, beta1, beta2, delta)
         iteration += 1
-        
-    #eigValsArray[epoch] = hessian_spectrum(params, xx, ff)
+    
+    #eigvals = hessian_eigenvals(params, xx, ff, k=2)
+    #eigValsArray = jnp.vstack([eigValsArray, eigvals]) if epoch > 0 else eigvals[None, :]
     train_loss = loss(params, xx, ff)
     acts = batched_activations(params, xx)
     for i, activation in enumerate(acts):
@@ -85,6 +85,7 @@ plt.xlabel('Epochs')
 plt.ylabel('Costo f(x)')
 plt.semilogy(log_train)
 
+#activation histogram
 plt.figure()
 for i, layer_values in enumerate(act_matrix):
     flat = jnp.ravel(layer_values)
@@ -92,7 +93,7 @@ for i, layer_values in enumerate(act_matrix):
     plt.legend()
 plt.title('Activation Histogram')
 
-
+#alpha variation with schedule
 plt.figure()
 plt.title('Alpha variation with power schedule 75 epochs')
 plt.plot(epochs, alphas, drawstyle='steps-pre')
